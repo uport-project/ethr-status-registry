@@ -49,7 +49,7 @@
     "lib/**/*"
   ],
   "dependencies": {
-    "credential-status": "^1.0.0",
+    "credential-status": "^1.0.1",
     "did-jwt": "^3.0.0"
   }
 }
