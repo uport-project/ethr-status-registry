@@ -1,0 +1,55 @@
+{
+  "name": "ethr-status-registry",
+  "version": "0.0.1",
+  "description": "Verifiable Credential status resolver using an ethereum contract as registry",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test-with-coverage": "jest --coverage && codecov",
+    "dev": "tsc --watch",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "release": "semantic-release --debug"
+  },
+  "repository": "git@github.com:uport-project/ethr-status-registry.git",
+  "keywords": [
+    "Verifiable Credential",
+    "W3C",
+    "ethereum",
+    "registry",
+    "status check",
+    "revocation",
+    "jwt"
+  ],
+  "author": "Mircea Nistor <mircea.nistor@consensys.net>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/uport-project/ethr-status-registry/issues"
+  },
+  "homepage": "https://github.com/uport-project/ethr-status-registry#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^3.0.5",
+    "@semantic-release/git": "^7.0.17",
+    "@types/jest": "^24.0.20",
+    "@types/node": "^12.11.7",
+    "codecov": "^3.6.1",
+    "jest": "^24.9.0",
+    "jest-extended": "^0.11.2",
+    "prettier": "^1.18.2",
+    "semantic-release": "^15.13.28",
+    "ts-jest": "^24.1.0",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.4"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "dependencies": {
+    "credential-status": "^1.0.0",
+    "did-jwt": "^3.0.0"
+  }
+}
