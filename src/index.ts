@@ -1,6 +1,8 @@
 import { decodeJWT } from 'did-jwt'
 import * as HttpProvider from 'ethjs-provider-http'
 import * as Eth from 'ethjs-query'
+import * as StatusRegistryContractABI from './contracts/ethr-status-registry.json'
+
 import {
   CredentialStatus,
   StatusMethod,
