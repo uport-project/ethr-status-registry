@@ -40,13 +40,29 @@ export class EthrStatusRegistry implements StatusResolver {
     return new Promise((resolve, reject) => {
       const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
       if (decodedJWT.status && decodedJWT.status.type === this.methodName) {
-        reject({ error: 'not implemented yet' })
+        return this.runCredentialCheck(credential, decodedJWT.status)
       } else {
         reject({ error: `unsupported credential status method` })
       }
     })
   }
-}
 
-// const StatusReg = new EthContract(eth)(EthrStatusRegistryContract)
-// const didReg = DidReg.at(registryAddress)
+  parseRegistryId(id: string): [string, string] {
+    const parsedId = id.match(/^((.*):)?(0x[0-9a-fA-F]{40})$/)
+    if (!parsedId) throw new Error(`Not a valid status registry ID: ${id}`)
+
+    const registryAddress = parsedId[3]
+    const networkId = !parsedId[1] ? 'mainnet' : parsedId[2]
+    return [registryAddress, networkId]
+  }
+
+  private async runCredentialCheck(
+    credential: string,
+    status: StatusEntry
+  ): Promise<null | CredentialStatus> {
+    const [registryAddress, networkId] = this.parseRegistryId(status.id)
+
+
+    return null
+  }
+}
