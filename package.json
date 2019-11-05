@@ -51,6 +51,8 @@
   "dependencies": {
     "credential-status": "^1.0.1",
     "did-jwt": "^3.0.0",
+    "did-resolver": "^1.0.0",
+    "ethjs-contract": "^0.2.3",
     "ethjs-provider-http": "^0.1.6",
     "ethjs-query": "^0.3.8"
   }

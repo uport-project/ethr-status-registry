@@ -1,6 +1,8 @@
 import { decodeJWT } from 'did-jwt'
+import { parse } from 'did-resolver'
 import * as HttpProvider from 'ethjs-provider-http'
 import * as Eth from 'ethjs-query'
+import * as EthContract from 'ethjs-contract'
 import * as StatusRegistryContractABI from './contracts/ethr-status-registry.json'
 
 import {
@@ -37,14 +39,13 @@ export class EthrStatusRegistry implements StatusResolver {
   }
 
   checkStatus(credential: string): Promise<null | CredentialStatus> {
-    return new Promise((resolve, reject) => {
-      const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
-      if (decodedJWT.status && decodedJWT.status.type === this.methodName) {
-        return this.runCredentialCheck(credential, decodedJWT.status)
-      } else {
-        reject({ error: `unsupported credential status method` })
-      }
-    })
+    const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
+    if (decodedJWT.status && decodedJWT.status.type === this.methodName) {
+      const parsedDID = parse(decodedJWT.iss)
+      return this.runCredentialCheck(credential, parsedDID.id, decodedJWT.status)
+    } else {
+      return Promise.reject(`unsupported credential status method`)
+    }
   }
 
   parseRegistryId(id: string): [string, string] {
@@ -56,13 +57,26 @@ export class EthrStatusRegistry implements StatusResolver {
     return [registryAddress, networkId]
   }
 
-  private async runCredentialCheck(
+  private runCredentialCheck(
     credential: string,
+    issuerAddress: string,
     status: StatusEntry
   ): Promise<null | CredentialStatus> {
     const [registryAddress, networkId] = this.parseRegistryId(status.id)
 
+    if (!this.networks[networkId])
+      return Promise.reject(
+        `networkId (${networkId}) for status check not configured`
+      )
 
-    return null
+    const eth = this.networks[networkId]
+    const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
+    const statusReg = StatusRegContract.at(registryAddress)
+
+    //TODO: actually hash the credential instead of hardcoding this hash
+    const credentialHash = "0x278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f"
+
+    let result = statusReg.revoked(issuerAddress, credentialHash)
+    return result
   }
 }
