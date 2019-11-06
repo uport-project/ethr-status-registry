@@ -70,10 +70,11 @@ export class EthrStatusRegistry implements StatusResolver {
   ): Promise<null | CredentialStatus> {
     const [registryAddress, networkId] = this.parseRegistryId(status.id)
 
-    if (!this.networks[networkId])
+    if (!this.networks[networkId]) {
       return Promise.reject(
         `networkId (${networkId}) for status check not configured`
       )
+    }
 
     const eth = this.networks[networkId]
     const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
@@ -82,7 +83,18 @@ export class EthrStatusRegistry implements StatusResolver {
     const hash = Buffer.from(keccak_256.arrayBuffer(credential)).toString('hex')
     const credentialHash = `0x${hash}`
 
-    let result = statusReg.revoked(issuerAddress, credentialHash)
-    return result
+    interface RevocationResult {
+      [index: string]: boolean
+    }
+
+    return new Promise((resolve, reject) => {
+      statusReg
+        .revoked(issuerAddress, credentialHash)
+        .then((rawResult: RevocationResult) => {
+          const isRevoked: boolean = rawResult['0']
+          resolve({ revoked: isRevoked })
+        })
+        .catch((e: Error) => reject(e))
+    })
   }
 }
