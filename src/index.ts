@@ -4,6 +4,8 @@ import * as HttpProvider from 'ethjs-provider-http'
 import * as Eth from 'ethjs-query'
 import * as EthContract from 'ethjs-contract'
 import * as StatusRegistryContractABI from './contracts/ethr-status-registry.json'
+import { keccak_256 } from 'js-sha3'
+import { Buffer } from 'buffer'
 
 import {
   CredentialStatus,
@@ -42,7 +44,11 @@ export class EthrStatusRegistry implements StatusResolver {
     const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
     if (decodedJWT.status && decodedJWT.status.type === this.methodName) {
       const parsedDID = parse(decodedJWT.iss)
-      return this.runCredentialCheck(credential, parsedDID.id, decodedJWT.status)
+      return this.runCredentialCheck(
+        credential,
+        parsedDID.id,
+        decodedJWT.status
+      )
     } else {
       return Promise.reject(`unsupported credential status method`)
     }
@@ -73,8 +79,8 @@ export class EthrStatusRegistry implements StatusResolver {
     const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
     const statusReg = StatusRegContract.at(registryAddress)
 
-    //TODO: actually hash the credential instead of hardcoding this hash
-    const credentialHash = "0x278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f"
+    const hash = Buffer.from(keccak_256.arrayBuffer(credential)).toString('hex')
+    const credentialHash = `0x${hash}`
 
     let result = statusReg.revoked(issuerAddress, credentialHash)
     return result

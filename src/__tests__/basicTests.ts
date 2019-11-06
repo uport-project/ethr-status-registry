@@ -49,13 +49,13 @@ it(`should reject unknown networkIDs`, async () => {
   )
 })
 
-it(`should do something`, async () => {
+it(`should check revocation status on deployed registry`, async () => {
   const token =
     'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NkstUiJ9.eyJpYXQiOjE1NzI5NzM2MjMsInN0YXR1cyI6eyJ0eXBlIjoiRXRoclN0YXR1c1JlZ2lzdHJ5MjAxOSIsImlkIjoicmlua2VieToweDFFNDY1MWRjYTVFZjM4NjM2ZTJFNEQ3QTZGZjRkMjQxM2ZDNTY0NTAifSwiaXNzIjoiZGlkOmV0aHI6MHhmM2JlYWMzMGM0OThkOWUyNjg2NWYzNGZjYWE1N2RiYjkzNWIwZDc0In0.CFDlVKGWBiJwUwq14waLQ2fqLljhJG3Qci5KFhcF8zM916sN7MWFESdF1TseIOPmIcteQ_99m61dTTJ0YMY0rwE'
   const statusChecker = new EthrStatusRegistry({
-    networks: [{ name: 'rinkeby', rpcUrl: 'https://rinkeby.infura.io/ethr-did' }]
+    networks: [
+      { name: 'rinkeby', rpcUrl: 'https://rinkeby.infura.io/ethr-did' }
+    ]
   })
-  const result = await statusChecker.checkStatus(token)
-  console.log(result)
-  expect(await statusChecker.checkStatus(token)).toMatchObject({'0':false})
+  await expect(statusChecker.checkStatus(token)).resolves.toMatchObject({ '0': false })
 })
