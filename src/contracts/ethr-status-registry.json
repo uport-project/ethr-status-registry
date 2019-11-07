@@ -3,65 +3,6 @@
     "constant": true,
     "inputs": [
       {
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "revocations",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "name": "revoker",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "digest",
-        "type": "bytes32"
-      }
-    ],
-    "name": "Revoked",
-    "type": "event"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "digest",
-        "type": "bytes32"
-      }
-    ],
-    "name": "revoke",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "name": "party",
         "type": "address"
       },
