@@ -1,7 +1,5 @@
 import { decodeJWT } from 'did-jwt'
 import { parse } from 'did-resolver'
-import * as HttpProvider from 'ethjs-provider-http'
-import * as Eth from 'ethjs-query'
 import * as EthContract from 'ethjs-contract'
 import * as StatusRegistryContractABI from './contracts/ethr-status-registry.json'
 import { keccak_256 } from 'js-sha3'
@@ -42,7 +40,7 @@ export class EthrStatusRegistry implements StatusResolver {
 
   checkStatus(credential: string): Promise<null | CredentialStatus> {
     const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
-    if (decodedJWT.status && decodedJWT.status.type === this.methodName) {
+    if (decodedJWT.status?.type === this.methodName) {
       const parsedDID = parse(decodedJWT.iss)
       return this.runCredentialCheck(
         credential,
@@ -63,7 +61,7 @@ export class EthrStatusRegistry implements StatusResolver {
     return [registryAddress, networkId]
   }
 
-  private runCredentialCheck(
+  private async runCredentialCheck(
     credential: string,
     issuerAddress: string,
     status: StatusEntry
@@ -87,14 +85,12 @@ export class EthrStatusRegistry implements StatusResolver {
       [index: string]: boolean
     }
 
-    return new Promise((resolve, reject) => {
-      statusReg
-        .revoked(issuerAddress, credentialHash)
-        .then((rawResult: RevocationResult) => {
-          const isRevoked: boolean = rawResult['0']
-          resolve({ revoked: isRevoked })
-        })
-        .catch((e: Error) => reject(e))
-    })
+    try {
+      const rawResult: RevocationResult = await statusReg.revoked(issuerAddress, credentialHash)
+      const isRevoked: boolean = rawResult['0']
+      return { revoked: isRevoked }
+    } catch(e) {
+      return Promise.reject(e)
+    }
   }
 }
