@@ -86,10 +86,13 @@ export class EthrStatusRegistry implements StatusResolver {
     }
 
     try {
-      const rawResult: RevocationResult = await statusReg.revoked(issuerAddress, credentialHash)
+      const rawResult: RevocationResult = await statusReg.revoked(
+        issuerAddress,
+        credentialHash
+      )
       const isRevoked: boolean = rawResult['0']
       return { revoked: isRevoked }
-    } catch(e) {
+    } catch (e) {
       return Promise.reject(e)
     }
   }
