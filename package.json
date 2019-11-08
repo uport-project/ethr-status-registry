@@ -41,15 +41,21 @@
     "prettier": "^1.18.2",
     "semantic-release": "^15.13.28",
     "ts-jest": "^24.1.0",
-    "tslint": "^5.20.0",
+    "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.6.4"
+    "typescript": "^3.7.2"
   },
   "files": [
     "lib/**/*"
   ],
   "dependencies": {
+    "buffer": "^5.4.3",
     "credential-status": "^1.0.1",
-    "did-jwt": "^3.0.0"
+    "did-jwt": "^3.0.0",
+    "did-resolver": "^1.0.0",
+    "ethjs-contract": "^0.2.3",
+    "ethjs-provider-http": "^0.1.6",
+    "ethjs-query": "^0.3.8",
+    "js-sha3": "^0.8.0"
   }
 }
