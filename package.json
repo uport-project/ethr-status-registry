@@ -1,6 +1,6 @@
 {
   "name": "ethr-status-registry",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Verifiable Credential status resolver using an ethereum contract as registry",
   "main": "dist/index.js",
   "scripts": {
