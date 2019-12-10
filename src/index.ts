@@ -9,7 +9,8 @@ import {
   CredentialStatus,
   StatusMethod,
   StatusResolver,
-  StatusEntry
+  StatusEntry,
+  DIDDocument
 } from 'credential-status'
 
 import {
@@ -38,13 +39,20 @@ export class EthrStatusRegistry implements StatusResolver {
     this.networks = configureResolverWithNetworks(conf)
   }
 
-  checkStatus(credential: string): Promise<null | CredentialStatus> {
+  parseRevokers(issuer: string, didDoc: DIDDocument) : string[] {
+    const parsedDID = parse(issuer)
+    //TODO: look for ethereumAddress entries in didDoc
+    return [ parsedDID.id ]
+  }
+
+  checkStatus(credential: string, didDoc: DIDDocument): Promise<null | CredentialStatus> {
     const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
+
     if (decodedJWT.status?.type === this.methodName) {
-      const parsedDID = parse(decodedJWT.iss)
+      const revokers = this.parseRevokers(decodedJWT.iss, didDoc)
       return this.runCredentialCheck(
         credential,
-        parsedDID.id,
+        revokers[0],
         decodedJWT.status
       )
     } else {
