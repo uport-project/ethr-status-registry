@@ -1,7 +1,7 @@
 import 'jest-extended'
 
 import { EthrStatusRegistry } from '../index'
-import { DIDDocument } from 'credential-status'
+import { DIDDocument } from 'did-resolver'
 import * as HttpProvider from 'ethjs-provider-http'
 
 const referenceDoc = {

@@ -3,7 +3,7 @@
     "constant": true,
     "inputs": [
       {
-        "name": "party",
+        "name": "issuer",
         "type": "address"
       },
       {

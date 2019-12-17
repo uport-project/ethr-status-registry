@@ -1,5 +1,5 @@
 import { decodeJWT } from 'did-jwt'
-import { parse } from 'did-resolver'
+import { parse, DIDDocument } from 'did-resolver'
 import * as EthContract from 'ethjs-contract'
 import * as StatusRegistryContractABI from './contracts/ethr-status-registry.json'
 import { keccak_256 } from 'js-sha3'
@@ -9,8 +9,7 @@ import {
   CredentialStatus,
   StatusMethod,
   StatusResolver,
-  StatusEntry,
-  DIDDocument
+  StatusEntry
 } from 'credential-status'
 
 import {
