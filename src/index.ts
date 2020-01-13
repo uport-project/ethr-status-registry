@@ -38,22 +38,61 @@ export class EthrStatusRegistry implements StatusResolver {
     this.networks = configureResolverWithNetworks(conf)
   }
 
-  parseRevokers(issuer: string, didDoc: DIDDocument) : string[] {
-    const parsedDID = parse(issuer)
-    //TODO: look for ethereumAddress entries in didDoc
-    return [ parsedDID.id ]
+  //look for ethereumAddress entries in didDoc
+  static filterDocForAddresses(didDoc: DIDDocument): string[] {
+    const keyEntries : string[] = didDoc
+      .publicKey?.filter(entry =>
+        (entry?.type === "Secp256k1VerificationKey2018" && typeof entry?.ethereumAddress !== "undefined"))
+      .map(entry => entry?.ethereumAddress || "" )
+      .filter(address => address !== "")
+
+    return keyEntries
   }
 
-  checkStatus(credential: string, didDoc: DIDDocument): Promise<null | CredentialStatus> {
+  private parseRevokers(credential: string, didDoc: DIDDocument, issuer: string) : string[] {
+    const ethereumAddresses = EthrStatusRegistry.filterDocForAddresses(didDoc)
+//     const derivedAddresses = this.filterDocForSecpKeys(didDoc)
+    let revokers: string[] = Array.from(new Set([
+      ...ethereumAddresses,
+//       ...derivedAddresses
+    ]));
+
+    return revokers
+  }
+
+  async checkStatus(credential: string, didDoc: DIDDocument): Promise<null | CredentialStatus> {
     const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
 
     if (decodedJWT.status?.type === this.methodName) {
-      const revokers = this.parseRevokers(decodedJWT.iss, didDoc)
-      return this.runCredentialCheck(
-        credential,
-        revokers[0],
-        decodedJWT.status
-      )
+      const [registryAddress, networkId] = this.parseRegistryId(decodedJWT?.status?.id)
+
+      if (!this.networks[networkId]) {
+        return Promise.reject(
+          `networkId (${networkId}) for status check not configured`
+        )
+      }
+
+      const eth = this.networks[networkId]
+      const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
+      const statusReg = StatusRegContract.at(registryAddress)
+
+      const revokers = this.parseRevokers(credential, didDoc, decodedJWT.iss)
+      let asyncChecks : Promise<null | CredentialStatus>[] =
+        revokers
+        .map(revoker => this.runCredentialCheck( credential, revoker, statusReg ))
+
+      const partials = await Promise.all(asyncChecks);
+
+      const gatherResultsLambda = (verdict: CredentialStatus, partial: CredentialStatus | null) => {
+        verdict.revoked = verdict?.revoked || partial?.revoked
+        return verdict
+      }
+
+      const result = partials
+        .filter(res => (res != null) && (typeof res.revoked !== "undefined"))
+        .reduce(gatherResultsLambda, {revoked : false})
+
+      return Promise.resolve(result)
     } else {
       return Promise.reject(`unsupported credential status method`)
     }
@@ -71,20 +110,8 @@ export class EthrStatusRegistry implements StatusResolver {
   private async runCredentialCheck(
     credential: string,
     issuerAddress: string,
-    status: StatusEntry
+    statusReg: any // the contract instance as returned by ethjs-contract
   ): Promise<null | CredentialStatus> {
-    const [registryAddress, networkId] = this.parseRegistryId(status.id)
-
-    if (!this.networks[networkId]) {
-      return Promise.reject(
-        `networkId (${networkId}) for status check not configured`
-      )
-    }
-
-    const eth = this.networks[networkId]
-    const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
-    const statusReg = StatusRegContract.at(registryAddress)
-
     const hash = Buffer.from(keccak_256.arrayBuffer(credential)).toString('hex')
     const credentialHash = `0x${hash}`
 
