@@ -41,7 +41,7 @@ export class EthrStatusRegistry implements StatusResolver {
   //look for ethereumAddress entries in didDoc
   static filterDocForAddresses(didDoc: DIDDocument): string[] {
     const keyEntries : string[] = didDoc
-      .publicKey?.filter(entry =>
+      .publicKey.filter(entry =>
         (entry?.type === "Secp256k1VerificationKey2018" && typeof entry?.ethereumAddress !== "undefined"))
       .map(entry => entry?.ethereumAddress || "" )
       .filter(address => address !== "")

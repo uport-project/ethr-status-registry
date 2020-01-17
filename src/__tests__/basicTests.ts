@@ -23,15 +23,15 @@ const referenceDoc = {
                        ]
                      } as DIDDocument
 
-test('should be able to instantiate Status using infura ID', () => {
+it('should be able to instantiate Status using infura ID', () => {
   expect(new EthrStatusRegistry({ infuraProjectId: 'none' })).not.toBeNil()
 })
 
-test('should be able to instantiate Status using single network definition', () => {
+it('should be able to instantiate Status using single network definition', () => {
   expect(new EthrStatusRegistry({ rpcUrl: 'example.com' })).not.toBeNil()
 })
 
-test('should be able to instantiate Status using multiple network definitions', () => {
+it('should be able to instantiate Status using multiple network definitions', () => {
   expect(
     new EthrStatusRegistry({
       networks: [
@@ -43,13 +43,13 @@ test('should be able to instantiate Status using multiple network definitions', 
   ).not.toBeNil()
 })
 
-test('asMethodName should have proper signature', () => {
+it('should have proper signature for "asMethodName"', () => {
   let mapping = new EthrStatusRegistry({ infuraProjectId: 'none' })
     .asStatusMethod
   expect(mapping['EthrStatusRegistry2019']).toBeFunction
 })
 
-test(`should reject unknown status method`, async () => {
+it(`should reject unknown status method`, async () => {
   const token =
     'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NkstUiJ9.eyJpYXQiOjE1NzI5NjY3ODAsInN0YXR1cyI6eyJ0eXBlIjoidW5rbm93biIsImlkIjoic29tZXRoaW5nIHNvbWV0aGluZyJ9LCJpc3MiOiJkaWQ6ZXRocjoweGYzYmVhYzMwYzQ5OGQ5ZTI2ODY1ZjM0ZmNhYTU3ZGJiOTM1YjBkNzQifQ.WO4kUEYy3xzZR1VlofOm3e39e1XM227uIr-Z7Yb9YQcJJ-2PRcnQmecW5fDjIfF3EInS3rRd4TZmuVQOnhaKQAE'
   const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'none' })
@@ -94,4 +94,16 @@ it(`should return revoked credential status`, async () => {
   await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
     revoked: true
   })
+})
+
+it(`should throw an error when the RPC endpoint is mis-configured`, async () => {
+  const token =
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NkstUiJ9.eyJpYXQiOjE1NzMwNDczNTEsInN0YXR1cyI6eyJ0eXBlIjoiRXRoclN0YXR1c1JlZ2lzdHJ5MjAxOSIsImlkIjoicmlua2VieToweDFFNDY1MWRjYTVFZjM4NjM2ZTJFNEQ3QTZGZjRkMjQxM2ZDNTY0NTAifSwiaXNzIjoiZGlkOmV0aHI6MHgxZmNmOGZmNzhhYzUxMTdkOWM5OWI4MzBjNzRiNjY2OGQ2YWMzMjI5In0.MHabafA0UxJuQJ0Z-7Egb57WRlgj4_zf96B0LUhRyXgVDU5RABIczTTTXWjcuKVzhJc_-FuhRI8uQYmQQNxKzgA'
+  const statusChecker = new EthrStatusRegistry({
+    networks: [
+      { name: 'rinkeby', rpcUrl: '0.0.0.0' }
+    ]
+  })
+
+  await expect(statusChecker.checkStatus(token, referenceDoc)).rejects.toThrow( /CONNECTION ERROR/ )
 })
