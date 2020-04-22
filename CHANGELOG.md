@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/uport-project/ethr-status-registry/compare/1.1.0...1.1.1) (2020-04-22)
+
+
+### Bug Fixes
+
+* **build:** fix path for main attribute in package.json ([facc36a](https://github.com/uport-project/ethr-status-registry/commit/facc36a6af9cd58939dad929d7184ed9bfb9ed8c))
+* **test:** fix rpc url for tests ([130185e](https://github.com/uport-project/ethr-status-registry/commit/130185ea280de00c585124080b225f3942148cbb))
+
 # [1.1.0](https://github.com/uport-project/ethr-status-registry/compare/1.0.0...1.1.0) (2020-02-04)
 
 
