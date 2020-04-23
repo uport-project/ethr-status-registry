@@ -20,14 +20,16 @@ const revocationStatus = statusReg.checkStatus(token)
 There is an easy way to use an `infuraProjectId` to quickly configure it for the popular public ethereum networks.
 
 ```typescript
-import { EthrStatusRegistry } from ethr-status-registry
+import { EthrStatusRegistry } from 'ethr-status-registry'
 import { Status } from 'credential-status'
 
 const status = new Status({
     ...new EthrStatusRegistry({infuraProjectId: 'YOUR Infura PROJECT ID HERE'}).asStatusMethod,
 })
 
-const result = await status.checkStatus(token)
+//... obtain issuer DID document either from `did-jwt`->`verifyJWT` or `did-resolver` -> `resolve()`
+
+const result = await status.checkStatus(token, didDoc)
 
 // { "revoked": true }
 ```
