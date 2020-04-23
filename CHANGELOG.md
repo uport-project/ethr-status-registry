@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/uport-project/ethr-status-registry/compare/1.1.1...1.1.2) (2020-04-23)
+
+
+### Bug Fixes
+
+* `this` field getting lost in typescript leading to crash ([b761fc1](https://github.com/uport-project/ethr-status-registry/commit/b761fc14deb015026acfdaafc88c290ab3652f0d)), closes [#14](https://github.com/uport-project/ethr-status-registry/issues/14)
+
 ## [1.1.1](https://github.com/uport-project/ethr-status-registry/compare/1.1.0...1.1.1) (2020-04-22)
 
 
