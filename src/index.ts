@@ -41,7 +41,7 @@ export class EthrStatusRegistry implements StatusResolver {
 
   private networks: NetworkConfiguration = {}
   constructor(conf: InfuraConfiguration | MultiProviderConfiguration) {
-    this.asStatusMethod[this.methodName] = this.checkStatus
+    this.asStatusMethod[this.methodName] = (cred, doc) => {return this.checkStatus(cred, doc)}
     this.networks = configureResolverWithNetworks(conf)
   }
 
