@@ -1,5 +1,5 @@
-import * as HttpProvider from 'ethjs-provider-http'
-import * as Eth from 'ethjs-query'
+import HttpProvider from 'ethjs-provider-http'
+import Eth from 'ethjs-query'
 
 function configureNetworksWithInfura(projectId: string) {
   const networks = [

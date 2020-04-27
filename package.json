@@ -33,17 +33,23 @@
   "devDependencies": {
     "@semantic-release/changelog": "^3.0.6",
     "@semantic-release/git": "^7.0.18",
+    "@truffle/contract": "^4.2.2",
+    "@types/ethjs-signer": "^0.1.0",
     "@types/jest": "^24.9.1",
     "@types/node": "^12.12.37",
     "codecov": "^3.6.1",
+    "ethjs-signer": "^0.1.1",
+    "ganache-cli": "^6.9.1",
     "jest": "^24.9.0",
     "jest-extended": "^0.11.5",
     "prettier": "^2.0.5",
+    "revocation-registry": "^0.1.0",
     "semantic-release": "^15.14.0",
     "ts-jest": "^24.3.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "web3": "^1.2.7"
   },
   "files": [
     "lib/**/*"
@@ -55,6 +61,7 @@
     "did-resolver": "^1.1.0",
     "ethjs-contract": "^0.2.3",
     "ethjs-provider-http": "^0.1.6",
+    "ethjs-provider-signer": "^0.1.4",
     "ethjs-query": "^0.3.8",
     "js-sha3": "^0.8.0"
   }

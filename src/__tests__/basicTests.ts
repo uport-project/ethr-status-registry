@@ -2,7 +2,7 @@ import 'jest-extended'
 
 import { EthrStatusRegistry } from '../index'
 import { DIDDocument } from 'did-resolver'
-import * as HttpProvider from 'ethjs-provider-http'
+import HttpProvider from 'ethjs-provider-http'
 
 const referenceDoc = {
   '@context': 'https://w3id.org/did/v1',
