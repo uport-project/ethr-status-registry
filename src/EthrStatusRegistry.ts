@@ -51,8 +51,13 @@ export class EthrStatusRegistry implements StatusResolver {
   async checkStatus(credential: string, didDoc: DIDDocument): Promise<null | CredentialStatus> {
     const decodedJWT = decodeJWT(credential).payload as JWTDecodedExtended
 
-    if (decodedJWT.status?.type === methodName) {
-      const [registryAddress, networkId] = this.parseRegistryId(decodedJWT?.status?.id)
+    const statusEntry = decodedJWT.credentialStatus
+    if (!statusEntry) {
+      return Promise.resolve({ status: 'NonRevocable' })
+    }
+
+    if (statusEntry.type === methodName) {
+      const [registryAddress, networkId] = this.parseRegistryId(statusEntry.id)
 
       if (!this.networks[networkId]) {
         return Promise.reject(`networkId (${networkId}) for status check not configured`)
