@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/uport-project/ethr-status-registry/compare/1.2.0...1.3.0) (2020-04-29)
+
+
+### Features
+
+* update path for status entry ([87f3e75](https://github.com/uport-project/ethr-status-registry/commit/87f3e756d49717184a7134244d02c2212cf95a13)), closes [#18](https://github.com/uport-project/ethr-status-registry/issues/18)
+
 # [1.2.0](https://github.com/uport-project/ethr-status-registry/compare/1.1.2...1.2.0) (2020-04-29)
 
 
