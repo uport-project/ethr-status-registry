@@ -1,3 +1,4 @@
 import { EthrStatusRegistry } from './EthrStatusRegistry'
+import { EthrCredentialRevoker } from './EthrCredentialRevoker'
 
-export { EthrStatusRegistry }
+export { EthrStatusRegistry, EthrCredentialRevoker }
