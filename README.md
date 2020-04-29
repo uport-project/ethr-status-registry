@@ -52,7 +52,7 @@ The payload of this token decodes like this:
 ```json
 {
   "iss": "did:ethr:rinkeby:0xf3beac30c498d9e26865f34fcaa57dbb935b0d74",
-  "status": {
+  "credentialStatus": {
     "type": "EthrStatusRegistry2019",
     "id": "rinkeby:0x1E4651dca5Ef38636e2E4D7A6Ff4d2413fC56450"
   }
