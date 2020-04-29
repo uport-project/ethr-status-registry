@@ -26,7 +26,7 @@ export class EthrCredentialRevoker {
 
   async revoke(token: string, revokerAddress: string, ethSign?: (rawTx: any, cb: any) => any): Promise<string> {
     const decoded = decodeJWT(token) as JWTDecodedExtended
-    const statusEntry = decoded.payload.status
+    const statusEntry = decoded.payload.credentialStatus
 
     if (!statusEntry) {
       throw new Error('credential_not_revokable; no status field embedded')

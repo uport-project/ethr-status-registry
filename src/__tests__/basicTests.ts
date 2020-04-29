@@ -100,7 +100,10 @@ describe('EthrStatusRegistry', () => {
     })
 
     it(`should reject unknown status method`, async () => {
-      const token = await createJWT({ status: { type: 'unknown', id: 'something something' } }, { issuer, signer })
+      const token = await createJWT(
+        { credentialStatus: { type: 'unknown', id: 'something something' } },
+        { issuer, signer }
+      )
       const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'none' })
       await expect(statusChecker.checkStatus(token, referenceDoc)).rejects.toMatch(
         'unsupported credential status method'
@@ -108,7 +111,7 @@ describe('EthrStatusRegistry', () => {
     })
 
     it(`should reject unknown networkIDs`, async () => {
-      const token = await createJWT({ status: statusEntry }, { issuer, signer })
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
       const statusChecker = new EthrStatusRegistry({
         networks: [{ name: 'some net', rpcUrl: 'example.com' }]
       })
@@ -118,7 +121,7 @@ describe('EthrStatusRegistry', () => {
     })
 
     it(`should throw an error when the RPC endpoint is mis-configured`, async () => {
-      const token = await createJWT({ status: statusEntry }, { issuer, signer })
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
       const statusChecker = new EthrStatusRegistry({
         networks: [{ name: 'ganache', rpcUrl: '0.0.0.0' }]
       })
@@ -128,8 +131,14 @@ describe('EthrStatusRegistry', () => {
   })
 
   describe('happy path', () => {
+    it(`should ignore non-revocable credentials`, async () => {
+      const token = await createJWT({}, { issuer, signer })
+      const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'none' })
+      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({ status: 'NonRevocable' })
+    })
+
     it(`should return valid credential status`, async () => {
-      const token = await createJWT({ status: statusEntry }, { issuer, signer })
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
       const statusChecker = new EthrStatusRegistry({
         networks: [{ name: 'ganache', provider: provider }]
       })
@@ -139,24 +148,24 @@ describe('EthrStatusRegistry', () => {
     })
 
     it(`should return revoked status for real credential`, async () => {
-      const token =
-        'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NkstUiJ9.eyJpYXQiOjE1NzMwNDczNTEsInN0YXR1cyI6eyJ0eXBlIjoiRXRoclN0YXR1c1JlZ2lzdHJ5MjAxOSIsImlkIjoicmlua2VieToweDFFNDY1MWRjYTVFZjM4NjM2ZTJFNEQ3QTZGZjRkMjQxM2ZDNTY0NTAifSwiaXNzIjoiZGlkOmV0aHI6MHgxZmNmOGZmNzhhYzUxMTdkOWM5OWI4MzBjNzRiNjY2OGQ2YWMzMjI5In0.MHabafA0UxJuQJ0Z-7Egb57WRlgj4_zf96B0LUhRyXgVDU5RABIczTTTXWjcuKVzhJc_-FuhRI8uQYmQQNxKzgA'
+      const referenceToken =
+        'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpYXQiOjE1ODgxNzE4MDAsInN1YiI6ImRpZDp3ZWI6dXBvcnQubWUiLCJub25jZSI6IjM4NzE4Njc0NTMiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQXdlc29tZW5lc3NDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Iml0IjoicmVhbGx5IHdoaXBzIHRoZSBsbGFtbWEncyBhc3MhIn19LCJjcmVkZW50aWFsU3RhdHVzIjp7InR5cGUiOiJFdGhyU3RhdHVzUmVnaXN0cnkyMDE5IiwiaWQiOiJyaW5rZWJ5OjB4OTdmZDI3ODkyY2RjRDAzNWRBZTFmZTcxMjM1YzYzNjA0NEI1OTM0OCJ9LCJpc3MiOiJkaWQ6ZXRocjoweDU0ZDU5ZTNmZmQ3NjkxN2Y2MmRiNzAyYWMzNTRiMTdmMzg0Mjk1NWUifQ.kpUbDVrs3ouIs0vb5IqL4_FAErANCZnFE-lTMlC9Hzpwa4u3_8BaJg4y1KIHq_ROr2oEam9UAujd5A4FbbzFoA'
 
       // proj ID only usable for this test
       const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'ec9c99d75b834bac8dd4bfacad8cfdf7' })
 
       const referenceDoc = {
-        id: 'did:ethr:0x1fcf8ff78ac5117d9c99b830c74b6668d6ac3229',
+        id: 'did:ethr:0x54d59e3ffd76917f62db702ac354b17f3842955e',
         publicKey: [
           {
-            id: 'did:ethr:0x1fcf8ff78ac5117d9c99b830c74b6668d6ac3229#owner',
+            id: 'did:ethr:0x54d59e3ffd76917f62db702ac354b17f3842955e#owner',
             type: 'Secp256k1VerificationKey2018',
-            ethereumAddress: '0x1fcf8ff78ac5117d9c99b830c74b6668d6ac3229'
+            ethereumAddress: '0x54d59e3ffd76917f62db702ac354b17f3842955e'
           }
         ]
       } as DIDDocument
 
-      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
+      await expect(statusChecker.checkStatus(referenceToken, referenceDoc)).resolves.toMatchObject({
         revoked: true
       })
     })
