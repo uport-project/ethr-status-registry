@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/uport-project/ethr-status-registry/compare/1.1.2...1.2.0) (2020-04-29)
+
+
+### Features
+
+* add experimental revoker code ([6fc2853](https://github.com/uport-project/ethr-status-registry/commit/6fc2853ba21080dbd198f4e84e9213f3159e6435)), closes [#5](https://github.com/uport-project/ethr-status-registry/issues/5)
+
 ## [1.1.2](https://github.com/uport-project/ethr-status-registry/compare/1.1.1...1.1.2) (2020-04-23)
 
 
