@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/uport-project/ethr-status-registry/compare/1.3.0...1.3.1) (2020-04-29)
+
+
+### Bug Fixes
+
+* **deps:** name `revocation-registry` as a direct dependency ([fc40831](https://github.com/uport-project/ethr-status-registry/commit/fc40831af99969274dd02ae0a5677e005d3046cc))
+
 # [1.3.0](https://github.com/uport-project/ethr-status-registry/compare/1.2.0...1.3.0) (2020-04-29)
 
 
