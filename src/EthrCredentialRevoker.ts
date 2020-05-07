@@ -6,16 +6,12 @@ import {
 } from './configuration'
 
 import { methodName, JWTDecodedExtended } from './EthrStatusRegistry'
+import { ExternalSignerProvider, SignerMethod } from './ExternalSignerProvider'
 
 import { decodeJWT } from 'did-jwt'
-import SignerProvider from 'ethjs-provider-signer'
-import Eth from 'ethjs-query'
-import EthContract from 'ethjs-contract'
+import { ethers } from 'ethers'
 
 import { abi as RevocationRegistryABI } from 'revocation-registry'
-
-import { keccak_256 } from 'js-sha3'
-import { Buffer } from 'buffer'
 
 // experimental API, expect breaking changes
 export class EthrCredentialRevoker {
@@ -24,7 +20,7 @@ export class EthrCredentialRevoker {
     this.networks = configureResolverWithNetworks(conf)
   }
 
-  async revoke(token: string, revokerAddress: string, ethSign?: (rawTx: any, cb: any) => any): Promise<string> {
+  async revoke(token: string, ethSign?: SignerMethod): Promise<string> {
     const decoded = decodeJWT(token) as JWTDecodedExtended
     const statusEntry = decoded.payload.credentialStatus
 
@@ -54,23 +50,18 @@ export class EthrCredentialRevoker {
 
     let provider = web3Provider
     if (ethSign) {
-      // this is hacky
-      const rpcUrl = web3Provider.rpc.currentProvider.host
-      provider = new SignerProvider(rpcUrl, {
-        signTransaction: ethSign
-      })
+      provider = new ExternalSignerProvider(ethSign, provider)
     }
 
-    const eth = new Eth(provider)
-    const registryContract = new EthContract(eth)(RevocationRegistryABI).at(registryAddress)
+    const registryContract = new ethers.Contract(registryAddress, RevocationRegistryABI, provider)
 
-    const hash = '0x' + Buffer.from(keccak_256.arrayBuffer(token)).toString('hex')
+    const tokenBytes = ethers.utils.toUtf8Bytes(token)
+    const hash = ethers.utils.keccak256(tokenBytes)
 
     const result = await registryContract.revoke(hash, {
-      from: revokerAddress,
-      gasLimit: 45000
+      gasLimit: 44309
     })
 
-    return result
+    return result.hash
   }
 }

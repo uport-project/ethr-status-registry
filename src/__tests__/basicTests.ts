@@ -1,48 +1,48 @@
 import 'jest-extended'
 
 import { EthrStatusRegistry } from '../index'
-import HttpProvider from 'ethjs-provider-http'
-import Contract from '@truffle/contract'
+import { EthrCredentialRevoker } from '../EthrCredentialRevoker'
 import * as RevocationRegistryContract from 'revocation-registry'
-import Web3 from 'web3'
 import * as ganache from 'ganache-cli'
 import { DIDDocument } from 'did-resolver'
 import { SimpleSigner, createJWT } from 'did-jwt'
+import { ContractFactory } from 'ethers'
+import { Web3Provider, JsonRpcProvider } from 'ethers/providers'
+import { ethers } from 'ethers'
+import { sign } from 'ethjs-signer'
 
 const privateKey = 'a285ab66393c5fdda46d6fbad9e27fafd438254ab72ad5acb681a0e9f20f5d7b'
-const signerAddress = '0x2036c6cd85692f0fb2c26e6c6b2eced9e4478dfd'
+const signerAddress = '0x2036C6CD85692F0Fb2C26E6c6B2ECed9e4478Dfd'
 const issuer: string = `did:ethr:${signerAddress}`
 const signer = SimpleSigner(privateKey)
 
 describe('EthrStatusRegistry', () => {
-  const provider = ganache.provider()
-  const RevocationReg = Contract(RevocationRegistryContract)
-  const web3 = new Web3(provider)
-  const getAccounts = () =>
-    new Promise((resolve, reject) =>
-      web3.eth.getAccounts((error: any, accounts: string[]) => (error ? reject(error) : resolve(accounts)))
-    )
-  RevocationReg.setProvider(provider)
+  const provider = new Web3Provider(
+    ganache.provider({
+      accounts: [
+        {
+          balance: ethers.utils.hexlify(ethers.utils.parseEther('1000'))
+        },
+        {
+          secretKey: '0x' + privateKey,
+          balance: ethers.utils.hexlify(ethers.utils.parseEther('1000'))
+        }
+      ]
+    })
+  )
 
-  let registry, accounts: string[], referenceDoc: DIDDocument, statusEntry: object, revokerAddress: string
+  let registry, referenceDoc: DIDDocument, statusEntry: object
 
   beforeAll(async () => {
-    accounts = (await getAccounts()) as string[]
-    revokerAddress = accounts[1]
+    const factory = new ContractFactory(
+      RevocationRegistryContract.abi,
+      RevocationRegistryContract.bytecode,
+      provider.getSigner(0)
+    )
 
-    const txReceipt = await web3.eth.sendTransaction({
-      to: signerAddress,
-      from: accounts[0],
-      value: '0xde0b6b3a7640000',
-      gas: 21000,
-      nonce: 0
-    })
-
-    registry = await RevocationReg.new({
-      from: accounts[0],
-      gasPrice: 100000000000,
-      gas: 4712388
-    })
+    const deployment = await factory.deploy()
+    registry = deployment.address
+    await deployment.deployed()
 
     referenceDoc = {
       '@context': 'https://w3id.org/did/v1',
@@ -58,19 +58,75 @@ describe('EthrStatusRegistry', () => {
           id: `${issuer}#owner`,
           type: 'Secp256k1VerificationKey2018',
           ethereumAddress: signerAddress
-        },
-        {
-          id: `${issuer}#revoker`,
-          type: 'Secp256k1VerificationKey2018',
-          ethereumAddress: revokerAddress
         }
       ]
     } as DIDDocument
 
     statusEntry = {
       type: 'EthrStatusRegistry2019',
-      id: `ganache:${registry.address}`
+      id: `ganache:${registry}`
     }
+  })
+
+  describe('happy path', () => {
+    it(`should ignore non-revocable credentials`, async () => {
+      const token = await createJWT({}, { issuer, signer })
+      const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'none' })
+      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({ status: 'NonRevocable' })
+    })
+
+    describe('round trip', () => {
+      it(`should create, revoke and verify a credential with revoked status`, async () => {
+        const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
+
+        const ethSigner = (rawTx: any, cb: any) => cb(null, sign(rawTx, '0x' + privateKey))
+
+        const revoker = new EthrCredentialRevoker({ networks: [{ name: 'ganache', provider: provider }] })
+        const revocationCall = await revoker.revoke(token, ethSigner)
+        const mined = await provider.waitForTransaction(revocationCall)
+
+        const statusChecker = new EthrStatusRegistry({
+          networks: [{ name: 'ganache', provider: provider }]
+        })
+
+        await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
+          revoked: true
+        })
+      })
+    })
+
+    it(`should return revoked status for real credential`, async () => {
+      const referenceToken =
+        'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpYXQiOjE1ODgxNzE4MDAsInN1YiI6ImRpZDp3ZWI6dXBvcnQubWUiLCJub25jZSI6IjM4NzE4Njc0NTMiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQXdlc29tZW5lc3NDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Iml0IjoicmVhbGx5IHdoaXBzIHRoZSBsbGFtbWEncyBhc3MhIn19LCJjcmVkZW50aWFsU3RhdHVzIjp7InR5cGUiOiJFdGhyU3RhdHVzUmVnaXN0cnkyMDE5IiwiaWQiOiJyaW5rZWJ5OjB4OTdmZDI3ODkyY2RjRDAzNWRBZTFmZTcxMjM1YzYzNjA0NEI1OTM0OCJ9LCJpc3MiOiJkaWQ6ZXRocjoweDU0ZDU5ZTNmZmQ3NjkxN2Y2MmRiNzAyYWMzNTRiMTdmMzg0Mjk1NWUifQ.kpUbDVrs3ouIs0vb5IqL4_FAErANCZnFE-lTMlC9Hzpwa4u3_8BaJg4y1KIHq_ROr2oEam9UAujd5A4FbbzFoA'
+
+      // proj ID only usable for this test
+      const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'ec9c99d75b834bac8dd4bfacad8cfdf7' })
+
+      const referenceDoc = {
+        id: 'did:ethr:0x54d59e3ffd76917f62db702ac354b17f3842955e',
+        publicKey: [
+          {
+            id: 'did:ethr:0x54d59e3ffd76917f62db702ac354b17f3842955e#owner',
+            type: 'Secp256k1VerificationKey2018',
+            ethereumAddress: '0x54d59e3ffd76917f62db702ac354b17f3842955e'
+          }
+        ]
+      } as DIDDocument
+
+      await expect(statusChecker.checkStatus(referenceToken, referenceDoc)).resolves.toMatchObject({
+        revoked: true
+      })
+    })
+
+    it(`should return valid credential status for fresh credential`, async () => {
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
+      const statusChecker = new EthrStatusRegistry({
+        networks: [{ name: 'ganache', provider: provider }]
+      })
+      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
+        revoked: false
+      })
+    })
   })
 
   describe('error scenarios', () => {
@@ -88,7 +144,7 @@ describe('EthrStatusRegistry', () => {
           networks: [
             { name: 'mainnet', rpcUrl: 'example.com' },
             { name: 'rinkeby', rpcUrl: 'rinkeby.example.com' },
-            { name: 'local', provider: new HttpProvider('http://localhost:8545') }
+            { name: 'local', provider: new JsonRpcProvider('http://localhost:8545') }
           ]
         })
       ).not.toBeNil()
@@ -127,47 +183,6 @@ describe('EthrStatusRegistry', () => {
       })
 
       await expect(statusChecker.checkStatus(token, referenceDoc)).rejects.toThrow(/CONNECTION ERROR/)
-    })
-  })
-
-  describe('happy path', () => {
-    it(`should ignore non-revocable credentials`, async () => {
-      const token = await createJWT({}, { issuer, signer })
-      const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'none' })
-      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({ status: 'NonRevocable' })
-    })
-
-    it(`should return valid credential status`, async () => {
-      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
-      const statusChecker = new EthrStatusRegistry({
-        networks: [{ name: 'ganache', provider: provider }]
-      })
-      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
-        revoked: false
-      })
-    })
-
-    it(`should return revoked status for real credential`, async () => {
-      const referenceToken =
-        'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpYXQiOjE1ODgxNzE4MDAsInN1YiI6ImRpZDp3ZWI6dXBvcnQubWUiLCJub25jZSI6IjM4NzE4Njc0NTMiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiQXdlc29tZW5lc3NDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Iml0IjoicmVhbGx5IHdoaXBzIHRoZSBsbGFtbWEncyBhc3MhIn19LCJjcmVkZW50aWFsU3RhdHVzIjp7InR5cGUiOiJFdGhyU3RhdHVzUmVnaXN0cnkyMDE5IiwiaWQiOiJyaW5rZWJ5OjB4OTdmZDI3ODkyY2RjRDAzNWRBZTFmZTcxMjM1YzYzNjA0NEI1OTM0OCJ9LCJpc3MiOiJkaWQ6ZXRocjoweDU0ZDU5ZTNmZmQ3NjkxN2Y2MmRiNzAyYWMzNTRiMTdmMzg0Mjk1NWUifQ.kpUbDVrs3ouIs0vb5IqL4_FAErANCZnFE-lTMlC9Hzpwa4u3_8BaJg4y1KIHq_ROr2oEam9UAujd5A4FbbzFoA'
-
-      // proj ID only usable for this test
-      const statusChecker = new EthrStatusRegistry({ infuraProjectId: 'ec9c99d75b834bac8dd4bfacad8cfdf7' })
-
-      const referenceDoc = {
-        id: 'did:ethr:0x54d59e3ffd76917f62db702ac354b17f3842955e',
-        publicKey: [
-          {
-            id: 'did:ethr:0x54d59e3ffd76917f62db702ac354b17f3842955e#owner',
-            type: 'Secp256k1VerificationKey2018',
-            ethereumAddress: '0x54d59e3ffd76917f62db702ac354b17f3842955e'
-          }
-        ]
-      } as DIDDocument
-
-      await expect(statusChecker.checkStatus(referenceToken, referenceDoc)).resolves.toMatchObject({
-        revoked: true
-      })
     })
   })
 })
