@@ -1,13 +1,8 @@
 import { decodeJWT } from 'did-jwt'
 import { DIDDocument } from 'did-resolver'
-
-// import StatusRegistryContractABI from './contracts/ethr-status-registry.json'
 import { abi as StatusRegistryContractABI } from 'revocation-registry'
-
 import { ethers } from 'ethers'
-
 import { CredentialStatus, StatusMethod, StatusResolver, StatusEntry } from 'credential-status'
-
 import {
   configureResolverWithNetworks,
   InfuraConfiguration,
@@ -64,10 +59,6 @@ export class EthrStatusRegistry implements StatusResolver {
       if (!this.networks[networkId]) {
         return Promise.reject(`networkId (${networkId}) for status check not configured`)
       }
-
-      // const eth = new Eth(this.networks[networkId])
-      // const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
-      // const statusReg = StatusRegContract.at(registryAddress)
 
       const statusReg = new ethers.Contract(registryAddress, StatusRegistryContractABI, this.networks[networkId])
 
