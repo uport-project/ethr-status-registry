@@ -66,7 +66,7 @@ export class EthrCredentialRevoker {
 
     const txOverrides = {
       gasLimit: gasLimit || 44309,
-      gasPrice: gasPrice || 100000000,
+      gasPrice: gasPrice || 1000000000,
       nonce
     }
 
