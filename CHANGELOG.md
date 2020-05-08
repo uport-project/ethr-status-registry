@@ -1,3 +1,12 @@
+# [2.1.0](https://github.com/uport-project/ethr-status-registry/compare/2.0.0...2.1.0) (2020-05-08)
+
+
+### Features
+
+* allow overrides for some transaction parameters for revocation ([12a3ecb](https://github.com/uport-project/ethr-status-registry/commit/12a3ecb884e35865402d913b74e2c2688efdcc14))
+* automatically compute nonce in ExternalSignerProvider ([564f5c0](https://github.com/uport-project/ethr-status-registry/commit/564f5c0cf69ff18ee7c02dff52dacb5f04fa5a72))
+* implement address recovery in ExternalSignerProvider ([e14956a](https://github.com/uport-project/ethr-status-registry/commit/e14956a3f986d6e2225b12a52ba47fe032e737e8))
+
 # [2.0.0](https://github.com/uport-project/ethr-status-registry/compare/1.3.1...2.0.0) (2020-05-08)
 
 
