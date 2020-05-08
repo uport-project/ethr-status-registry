@@ -49,7 +49,8 @@
     "typescript": "^3.8.3"
   },
   "files": [
-    "lib/**/*"
+    "lib/**/*",
+    "src/**/*"
   ],
   "dependencies": {
     "credential-status": "^1.2.1",
