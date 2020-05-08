@@ -1,5 +1,4 @@
-import HttpProvider from 'ethjs-provider-http'
-import Eth from 'ethjs-query'
+import { JsonRpcProvider } from 'ethers/providers'
 
 function configureNetworksWithInfura(projectId: string) {
   const networks = [
@@ -31,14 +30,12 @@ function configureProvider(conf: ProviderConfiguration = {}) {
   } else if (conf.web3) {
     return conf.web3.currentProvider
   } else {
-    return new HttpProvider(conf.rpcUrl || 'http://127.0.0.1:8545/')
+    return new JsonRpcProvider(conf.rpcUrl || 'http://127.0.0.1:8545/')
   }
 }
 
 function configureNetwork(conf: ProviderConfiguration = {}) {
-  const provider = configureProvider(conf)
-  const eth = new Eth(provider)
-  return eth
+  return configureProvider(conf)
 }
 
 export interface NetworkConfiguration {

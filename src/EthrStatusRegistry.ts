@@ -1,18 +1,15 @@
 import { decodeJWT } from 'did-jwt'
-import { parse, DIDDocument } from 'did-resolver'
-import EthContract from 'ethjs-contract'
-import StatusRegistryContractABI from './contracts/ethr-status-registry.json'
-import { keccak_256 } from 'js-sha3'
-import { Buffer } from 'buffer'
-
+import { DIDDocument } from 'did-resolver'
+import { abi as StatusRegistryContractABI } from 'revocation-registry'
+import { ethers } from 'ethers'
 import { CredentialStatus, StatusMethod, StatusResolver, StatusEntry } from 'credential-status'
-
 import {
   configureResolverWithNetworks,
   InfuraConfiguration,
   MultiProviderConfiguration,
   NetworkConfiguration
 } from './configuration'
+import { BigNumber } from 'ethers/utils'
 
 export interface JWTDecodedExtended {
   status?: StatusEntry
@@ -63,9 +60,7 @@ export class EthrStatusRegistry implements StatusResolver {
         return Promise.reject(`networkId (${networkId}) for status check not configured`)
       }
 
-      const eth = this.networks[networkId]
-      const StatusRegContract = new EthContract(eth)(StatusRegistryContractABI)
-      const statusReg = StatusRegContract.at(registryAddress)
+      const statusReg = new ethers.Contract(registryAddress, StatusRegistryContractABI, this.networks[networkId])
 
       const revokers = this.parseRevokers(credential, didDoc, decodedJWT.iss)
       const asyncChecks: Array<Promise<null | CredentialStatus>> = revokers.map((revoker) =>
@@ -103,18 +98,20 @@ export class EthrStatusRegistry implements StatusResolver {
     issuerAddress: string,
     statusReg: any // the contract instance as returned by ethjs-contract
   ): Promise<null | CredentialStatus> {
-    const hash = Buffer.from(keccak_256.arrayBuffer(credential)).toString('hex')
-    const credentialHash = `0x${hash}`
+    const tokenBytes = ethers.utils.toUtf8Bytes(credential)
+    const credentialHash = ethers.utils.keccak256(tokenBytes)
 
     interface RevocationResult {
       [index: string]: boolean
     }
 
     try {
-      const rawResult: RevocationResult = await statusReg.revoked(issuerAddress, credentialHash)
-      const isRevoked: boolean = rawResult['0']
-      return { revoked: isRevoked }
+      const revocationBlock: BigNumber = await statusReg.revoked(issuerAddress, credentialHash)
+      return { revoked: !revocationBlock.isZero() }
     } catch (e) {
+      if (typeof e.statusCode !== 'undefined') {
+        return Promise.reject(new Error('CONNECTION ERROR'))
+      }
       return Promise.reject(e)
     }
   }
