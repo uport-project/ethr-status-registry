@@ -34,6 +34,10 @@ export class ExternalSignerProvider extends ethers.Signer {
       throw new Error('missing provider')
     }
 
+    if (transaction.nonce == null) {
+      transaction.nonce = await this.provider.getTransactionCount(this.getAddress(), 'pending')
+    }
+
     return this.sign(transaction).then((signedTransaction) => {
       return this.provider.sendTransaction(signedTransaction)
     })
