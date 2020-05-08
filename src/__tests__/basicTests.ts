@@ -82,8 +82,8 @@ describe('EthrStatusRegistry', () => {
         const ethSigner = (rawTx: any, cb: any) => cb(null, sign(rawTx, '0x' + privateKey))
 
         const revoker = new EthrCredentialRevoker({ networks: [{ name: 'ganache', provider: provider }] })
-        const revocationCall = await revoker.revoke(token, ethSigner)
-        const mined = await provider.waitForTransaction(revocationCall)
+        const txHash = await revoker.revoke(token, ethSigner)
+        const mined = await provider.waitForTransaction(txHash)
 
         const statusChecker = new EthrStatusRegistry({
           networks: [{ name: 'ganache', provider: provider }]

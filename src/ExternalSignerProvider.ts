@@ -1,6 +1,6 @@
 import { ethers } from 'ethers'
 
-export type SignerMethod = (rawTx: any, cb: any) => void
+export type SignerMethod = (rawTx: any, cb: (err: any, signedTx: string) => void) => void
 
 export class ExternalSignerProvider extends ethers.Signer {
   private ethSign?: SignerMethod
