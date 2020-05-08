@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/uport-project/ethr-status-registry/compare/2.1.0...2.1.1) (2020-05-08)
+
+
+### Bug Fixes
+
+* increase default gasPrice for revocation to 1 GWei ([b3d6c2d](https://github.com/uport-project/ethr-status-registry/commit/b3d6c2df458a1f9a0b7c2fcfc93edf35dd10a926))
+
 # [2.1.0](https://github.com/uport-project/ethr-status-registry/compare/2.0.0...2.1.0) (2020-05-08)
 
 
