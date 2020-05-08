@@ -20,12 +20,16 @@ export class EthrCredentialRevoker {
     this.networks = configureResolverWithNetworks(conf)
   }
 
-  async revoke(token: string, ethSign?: SignerMethod): Promise<string> {
+  async revoke(
+    token: string,
+    ethSign?: SignerMethod,
+    txOptions?: Partial<ethers.providers.TransactionRequest>
+  ): Promise<string> {
     const decoded = decodeJWT(token) as JWTDecodedExtended
     const statusEntry = decoded.payload.credentialStatus
 
     if (!statusEntry) {
-      throw new Error('credential_not_revokable; no status field embedded')
+      throw new Error('credential_not_revocable; no status field embedded')
     }
 
     if (statusEntry.type !== methodName) {
@@ -35,7 +39,7 @@ export class EthrCredentialRevoker {
     const registryCoord = statusEntry.id.split(':')
 
     if (registryCoord.length !== 2) {
-      throw new Error('credential_not_revokable; malformed `id` field in credential status entry')
+      throw new Error('credential_not_revocable; malformed `id` field in credential status entry')
     }
 
     const network = registryCoord[0]
@@ -44,7 +48,7 @@ export class EthrCredentialRevoker {
 
     if (!web3Provider) {
       throw new Error(
-        `credential_not_revokable; no known way to access network(${network}) used in credential status entry. Check your providerConfig configuration`
+        `credential_not_revocable; no known way to access network(${network}) used in credential status entry. Check your providerConfig configuration`
       )
     }
 
@@ -58,10 +62,25 @@ export class EthrCredentialRevoker {
     const tokenBytes = ethers.utils.toUtf8Bytes(token)
     const hash = ethers.utils.keccak256(tokenBytes)
 
-    const result = await registryContract.revoke(hash, {
-      gasLimit: 44309
-    })
+    const { gasPrice, gasLimit, nonce } = { ...txOptions }
 
-    return result.hash
+    const txOverrides = {
+      gasLimit: gasLimit || 44309,
+      gasPrice: gasPrice || 100000000,
+      nonce
+    }
+
+    try {
+      const result = await registryContract.revoke(hash, txOverrides)
+      return result.hash
+    } catch (e) {
+      if (e.transaction && /VM Exception while processing transaction: revert/.test(e.message)) {
+        const err = new Error('credential_already_revoked') as any
+        err.cause = e
+        throw err
+      } else {
+        throw e
+      }
+    }
   }
 }

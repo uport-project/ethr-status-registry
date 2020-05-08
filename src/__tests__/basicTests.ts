@@ -31,6 +31,8 @@ describe('EthrStatusRegistry', () => {
     })
   )
 
+  const localNetworkConfig = { networks: [{ name: 'ganache', provider: provider }] }
+
   let registry, referenceDoc: DIDDocument, statusEntry: object
 
   beforeAll(async () => {
@@ -75,23 +77,19 @@ describe('EthrStatusRegistry', () => {
       await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({ status: 'NonRevocable' })
     })
 
-    describe('round trip', () => {
-      it(`should create, revoke and verify a credential with revoked status`, async () => {
-        const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
+    it(`round trip; should create, revoke and verify a credential with revoked status`, async () => {
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
 
-        const ethSigner = (rawTx: any, cb: any) => cb(null, sign(rawTx, '0x' + privateKey))
+      const ethSigner = (rawTx: any, cb: any) => cb(null, sign(rawTx, '0x' + privateKey))
 
-        const revoker = new EthrCredentialRevoker({ networks: [{ name: 'ganache', provider: provider }] })
-        const txHash = await revoker.revoke(token, ethSigner)
-        const mined = await provider.waitForTransaction(txHash)
+      const revoker = new EthrCredentialRevoker(localNetworkConfig)
+      const txHash = await revoker.revoke(token, ethSigner)
+      const mined = await provider.waitForTransaction(txHash)
 
-        const statusChecker = new EthrStatusRegistry({
-          networks: [{ name: 'ganache', provider: provider }]
-        })
+      const statusChecker = new EthrStatusRegistry(localNetworkConfig)
 
-        await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
-          revoked: true
-        })
+      await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
+        revoked: true
       })
     })
 
@@ -120,16 +118,37 @@ describe('EthrStatusRegistry', () => {
 
     it(`should return valid credential status for fresh credential`, async () => {
       const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
-      const statusChecker = new EthrStatusRegistry({
-        networks: [{ name: 'ganache', provider: provider }]
-      })
+      const statusChecker = new EthrStatusRegistry(localNetworkConfig)
       await expect(statusChecker.checkStatus(token, referenceDoc)).resolves.toMatchObject({
         revoked: false
       })
     })
+
+    it(`should override transaction options`, async () => {
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
+
+      const ethSigner = (rawTx: any, cb: any) => cb(null, sign(rawTx, '0x' + privateKey))
+
+      const revoker = new EthrCredentialRevoker(localNetworkConfig)
+      const txHash = await revoker.revoke(token, ethSigner, { gasLimit: 45123, gasPrice: 123456789 })
+      const minedTransaction = await provider.getTransaction(txHash)
+
+      expect(minedTransaction.gasLimit.toNumber()).toBe(45123)
+      expect(minedTransaction.gasPrice.toNumber()).toBe(123456789)
+    })
   })
 
   describe('error scenarios', () => {
+    it(`should throw when revoking same credential twice`, async () => {
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
+
+      const ethSigner = (rawTx: any, cb: any) => cb(null, sign(rawTx, '0x' + privateKey))
+
+      const revoker = new EthrCredentialRevoker(localNetworkConfig)
+      await revoker.revoke(token, ethSigner)
+      await expect(revoker.revoke(token, ethSigner)).rejects.toThrow(/credential_already_revoked/)
+    })
+
     it('should be able to instantiate Status using infura ID', () => {
       expect(new EthrStatusRegistry({ infuraProjectId: 'none' })).not.toBeNil()
     })
@@ -183,6 +202,31 @@ describe('EthrStatusRegistry', () => {
       })
 
       await expect(statusChecker.checkStatus(token, referenceDoc)).rejects.toThrow(/CONNECTION ERROR/)
+    })
+
+    it(`should throw when revoking non-revocable credential`, async () => {
+      const token = await createJWT({}, { issuer, signer })
+
+      const revoker = new EthrCredentialRevoker(localNetworkConfig)
+      await expect(revoker.revoke(token)).rejects.toThrow(/credential_not_revocable; no status field embedded/)
+    })
+
+    it(`should throw when revoking non-revocable credential because of malformed ID`, async () => {
+      const token = await createJWT(
+        { credentialStatus: { type: 'EthrStatusRegistry2019', id: 'bad id' } },
+        { issuer, signer }
+      )
+
+      const revoker = new EthrCredentialRevoker(localNetworkConfig)
+      await expect(revoker.revoke(token)).rejects.toThrow(
+        /credential_not_revocable; malformed `id` field in credential status entry/
+      )
+    })
+
+    it(`should throw when revoking credential with misconfigured network`, async () => {
+      const token = await createJWT({ credentialStatus: statusEntry }, { issuer, signer })
+      const revoker = new EthrCredentialRevoker({})
+      await expect(revoker.revoke(token)).rejects.toThrow(/credential_not_revocable; no known way to access network/)
     })
   })
 })
