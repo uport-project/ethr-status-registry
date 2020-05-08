@@ -1,3 +1,16 @@
+# [2.0.0](https://github.com/uport-project/ethr-status-registry/compare/1.3.1...2.0.0) (2020-05-08)
+
+
+### Features
+
+* stabilize revocation using externalized signer ([819ead4](https://github.com/uport-project/ethr-status-registry/commit/819ead48641f665bfb64a10a67f73207e39e76a5))
+
+
+### BREAKING CHANGES
+
+* switched to ethers.js instead of eth-js
+This means it will internally create `JsonRpcProvider` instead of `HttpProvider` when configured with `rpcUrl`
+
 ## [1.3.1](https://github.com/uport-project/ethr-status-registry/compare/1.3.0...1.3.1) (2020-04-29)
 
 
