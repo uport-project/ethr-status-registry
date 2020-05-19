@@ -46,7 +46,7 @@
     "ts-jest": "26.0.0",
     "tslint": "5.20.1",
     "tslint-config-prettier": "1.18.0",
-    "typescript": "3.9.2"
+    "typescript": "3.9.3"
   },
   "files": [
     "lib/**/*",
