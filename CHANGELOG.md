@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/uport-project/ethr-status-registry/compare/2.1.1...2.1.2) (2020-06-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency did-resolver to v2 ([46d7bd6](https://github.com/uport-project/ethr-status-registry/commit/46d7bd6aa4cef065e041d5edbb47351bffb2a37d))
+
 ## [2.1.1](https://github.com/uport-project/ethr-status-registry/compare/2.1.0...2.1.1) (2020-05-08)
 
 
