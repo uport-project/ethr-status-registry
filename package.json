@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "test-with-coverage": "jest --coverage && codecov",
+    "test:ci": "jest --coverage && codecov",
     "dev": "tsc --watch",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",

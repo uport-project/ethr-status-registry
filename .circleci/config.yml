@@ -33,6 +33,7 @@ workflows:
               only:
                 - master
       - run-semantic-release:
+          context: uport-open-automation
           requires:
             - verify-unit-tests
           filters:
@@ -71,7 +72,7 @@ jobs:
       - *save-npm-cache
       - run:
           name: Run unit tests
-          command: npm run test-with-coverage
+          command: npm run test:ci
       - run:
           name: Run lint
           command: npm run lint
@@ -92,6 +93,6 @@ jobs:
       - run:
           name: Semantic release
           command: |
-            git config user.email "devops@uport.me"
-            git config user.name "uport-automation-bot"
+            git config user.email "$GITHUB_EMAIL"
+            git config user.name "$GITHUB_USER"
             npm run release
