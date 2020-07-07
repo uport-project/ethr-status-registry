@@ -56,7 +56,7 @@
     "credential-status": "^1.2.1",
     "did-jwt": "^4.3.2",
     "did-resolver": "^2.0.0",
-    "ethers": "^4.0.47",
+    "ethers": "^5.0.0",
     "revocation-registry": "^0.1.0"
   }
 }
