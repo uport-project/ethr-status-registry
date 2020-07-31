@@ -39,7 +39,7 @@
     "codecov": "3.7.2",
     "ethjs-signer": "0.1.1",
     "ganache-cli": "6.9.1",
-    "jest": "26.1.0",
+    "jest": "26.2.1",
     "jest-extended": "0.11.5",
     "prettier": "2.0.5",
     "semantic-release": "17.1.1",
