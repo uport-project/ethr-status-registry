@@ -38,7 +38,7 @@
     "@types/node": "12.12.44",
     "codecov": "3.7.2",
     "ethjs-signer": "0.1.1",
-    "ganache-cli": "6.9.1",
+    "ganache-cli": "6.10.1",
     "jest": "26.2.2",
     "jest-extended": "0.11.5",
     "prettier": "2.0.5",
