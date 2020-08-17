@@ -34,7 +34,7 @@
     "@semantic-release/changelog": "5.0.1",
     "@semantic-release/git": "9.0.0",
     "@types/ethjs-signer": "0.1.0",
-    "@types/jest": "26.0.9",
+    "@types/jest": "26.0.10",
     "@types/node": "12.12.44",
     "codecov": "3.7.2",
     "ethjs-signer": "0.1.1",
