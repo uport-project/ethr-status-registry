@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/uport-project/ethr-status-registry/compare/2.1.2...2.1.3) (2021-01-20)
+
+
+### Bug Fixes
+
+* **deps:** update dependency ethers to v5 ([#81](https://github.com/uport-project/ethr-status-registry/issues/81)) ([a02590d](https://github.com/uport-project/ethr-status-registry/commit/a02590d2e52214c9cec91c23056d4db567cb3f85))
+
 ## [2.1.2](https://github.com/uport-project/ethr-status-registry/compare/2.1.1...2.1.2) (2020-06-11)
 
 
