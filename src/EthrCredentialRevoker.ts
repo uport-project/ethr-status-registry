@@ -9,7 +9,10 @@ import { methodName, JWTDecodedExtended } from './EthrStatusRegistry'
 import { ExternalSignerProvider, SignerMethod } from './ExternalSignerProvider'
 
 import { decodeJWT } from 'did-jwt'
-import { ethers } from 'ethers'
+import { TransactionRequest } from '@ethersproject/providers'
+import { Contract } from '@ethersproject/contracts'
+import { toUtf8Bytes } from '@ethersproject/strings'
+import { keccak256 } from '@ethersproject/keccak256'
 
 import { abi as RevocationRegistryABI } from 'revocation-registry'
 
@@ -23,7 +26,7 @@ export class EthrCredentialRevoker {
   async revoke(
     token: string,
     ethSign?: SignerMethod,
-    txOptions?: Partial<ethers.providers.TransactionRequest>
+    txOptions?: Partial<TransactionRequest>
   ): Promise<string> {
     const decoded = decodeJWT(token) as JWTDecodedExtended
     const statusEntry = decoded.payload.credentialStatus
@@ -57,10 +60,10 @@ export class EthrCredentialRevoker {
       provider = new ExternalSignerProvider(ethSign, provider)
     }
 
-    const registryContract = new ethers.Contract(registryAddress, RevocationRegistryABI, provider)
+    const registryContract = new Contract(registryAddress, RevocationRegistryABI, provider)
 
-    const tokenBytes = ethers.utils.toUtf8Bytes(token)
-    const hash = ethers.utils.keccak256(tokenBytes)
+    const tokenBytes = toUtf8Bytes(token)
+    const hash = keccak256(tokenBytes)
 
     const { gasPrice, gasLimit, nonce } = { ...txOptions }
 

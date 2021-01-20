@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from 'ethers/providers'
+import { JsonRpcProvider } from '@ethersproject/providers'
 
 function configureNetworksWithInfura(projectId: string) {
   const networks = [

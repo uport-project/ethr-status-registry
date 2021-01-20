@@ -1,35 +1,49 @@
-import { ethers } from 'ethers'
+// import { ethers } from 'ethers'
+import { Signer } from '@ethersproject/abstract-signer'
+import { Provider, TransactionRequest, TransactionResponse } from '@ethersproject/providers'
+import { defineReadOnly, resolveProperties, Deferrable } from '@ethersproject/properties'
+import { parse as parseTransaction } from '@ethersproject/transactions'
+import { Bytes } from '@ethersproject/bytes'
 
 export type SignerMethod = (rawTx: any, cb: (err: any, signedTx: string) => void) => void
 
-export class ExternalSignerProvider extends ethers.Signer {
-  private ethSign?: SignerMethod
+export class ExternalSignerProvider extends Signer {
 
-  constructor(ethSign: SignerMethod, provider: ethers.providers.Provider) {
-    super()
-    this.ethSign = ethSign
-    ethers.utils.defineReadOnly(this, 'provider', provider)
+  connect(provider: Provider): Signer {
+    return new ExternalSignerProvider(this.ethSign, provider)
   }
 
-  async sign(transaction: ethers.providers.TransactionRequest): Promise<string> {
-    const tx = await ethers.utils.resolveProperties(transaction)
+  private ethSign?: SignerMethod
+
+  constructor(ethSign: SignerMethod, provider: Provider) {
+    super()
+    this.ethSign = ethSign
+    defineReadOnly(this, 'provider', provider)
+  }
+
+  async sign(transaction: TransactionRequest): Promise<string> {
+    const tx = await resolveProperties(transaction)
     const signed = await this.signRaw(tx)
     return signed
   }
 
   async getAddress(): Promise<string> {
     const signedTx = await this.signRaw({})
-    const decoded = ethers.utils.parseTransaction(signedTx)
+    const decoded = parseTransaction(signedTx)
     return decoded.from
   }
 
-  signMessage(message: ethers.utils.Arrayish): Promise<string> {
+  signMessage(message: Bytes | string): Promise<string> {
+    return Promise.reject(new Error('Method not implemented.'))
+  }
+
+  signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
     return Promise.reject(new Error('Method not implemented.'))
   }
 
   async sendTransaction(
-    transaction: ethers.providers.TransactionRequest
-  ): Promise<ethers.providers.TransactionResponse> {
+    transaction: TransactionRequest
+  ): Promise<TransactionResponse> {
     if (!this.provider) {
       throw new Error('missing provider')
     }

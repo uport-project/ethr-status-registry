@@ -11,7 +11,7 @@ it('can create buffer from a string', () => {
 
 it('can hash a message', () => {
   const message = 'hello'
-  expect(Buffer.from(keccak_256.arrayBuffer(message)).toString('hex')).toBe(
+  expect(Buffer.from(keccak_256(message), 'hex').toString('hex')).toBe(
     '1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8'
   )
 })
