@@ -6,10 +6,11 @@ import * as RevocationRegistryContract from 'revocation-registry'
 import * as ganache from 'ganache-cli'
 import { DIDDocument } from 'did-resolver'
 import { SimpleSigner, createJWT } from 'did-jwt'
-import { ContractFactory } from 'ethers'
-import { Web3Provider, JsonRpcProvider } from 'ethers/providers'
-import { ethers } from 'ethers'
+import { Web3Provider, JsonRpcProvider } from '@ethersproject/providers'
 import { sign } from 'ethjs-signer'
+import { hexlify } from '@ethersproject/bytes'
+import { parseEther } from '@ethersproject/units'
+import { ContractFactory } from '@ethersproject/contracts'
 
 const privateKey = 'a285ab66393c5fdda46d6fbad9e27fafd438254ab72ad5acb681a0e9f20f5d7b'
 const signerAddress = '0x2036C6CD85692F0Fb2C26E6c6B2ECed9e4478Dfd'
@@ -21,11 +22,11 @@ describe('EthrStatusRegistry', () => {
     ganache.provider({
       accounts: [
         {
-          balance: ethers.utils.hexlify(ethers.utils.parseEther('1000'))
+          balance: hexlify(parseEther('1000'))
         },
         {
           secretKey: '0x' + privateKey,
-          balance: ethers.utils.hexlify(ethers.utils.parseEther('1000'))
+          balance: hexlify(parseEther('1000'))
         }
       ]
     })

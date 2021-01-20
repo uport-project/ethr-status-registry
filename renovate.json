@@ -2,8 +2,6 @@
   "extends": [
     "config:base"
   ],
-  "timezone": "GMT",
-  "schedule": ["before 7am every weekday"],
   "labels": ["maintenance"],
   "packageRules": [
     {

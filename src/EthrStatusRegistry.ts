@@ -1,7 +1,6 @@
 import { decodeJWT } from 'did-jwt'
 import { DIDDocument } from 'did-resolver'
 import { abi as StatusRegistryContractABI } from 'revocation-registry'
-import { ethers } from 'ethers'
 import { CredentialStatus, StatusMethod, StatusResolver, StatusEntry } from 'credential-status'
 import {
   configureResolverWithNetworks,
@@ -9,7 +8,11 @@ import {
   MultiProviderConfiguration,
   NetworkConfiguration
 } from './configuration'
-import { BigNumber } from 'ethers/utils'
+
+import { BigNumber } from '@ethersproject/bignumber'
+import { Contract } from '@ethersproject/contracts'
+import { toUtf8Bytes } from '@ethersproject/strings'
+import { keccak256 } from '@ethersproject/keccak256'
 
 export interface JWTDecodedExtended {
   status?: StatusEntry
@@ -60,7 +63,7 @@ export class EthrStatusRegistry implements StatusResolver {
         return Promise.reject(`networkId (${networkId}) for status check not configured`)
       }
 
-      const statusReg = new ethers.Contract(registryAddress, StatusRegistryContractABI, this.networks[networkId])
+      const statusReg = new Contract(registryAddress, StatusRegistryContractABI, this.networks[networkId])
 
       const revokers = this.parseRevokers(credential, didDoc, decodedJWT.iss)
       const asyncChecks: Array<Promise<null | CredentialStatus>> = revokers.map((revoker) =>
@@ -98,8 +101,8 @@ export class EthrStatusRegistry implements StatusResolver {
     issuerAddress: string,
     statusReg: any // the contract instance as returned by ethjs-contract
   ): Promise<null | CredentialStatus> {
-    const tokenBytes = ethers.utils.toUtf8Bytes(credential)
-    const credentialHash = ethers.utils.keccak256(tokenBytes)
+    const tokenBytes = toUtf8Bytes(credential)
+    const credentialHash = keccak256(tokenBytes)
 
     interface RevocationResult {
       [index: string]: boolean
@@ -109,7 +112,7 @@ export class EthrStatusRegistry implements StatusResolver {
       const revocationBlock: BigNumber = await statusReg.revoked(issuerAddress, credentialHash)
       return { revoked: !revocationBlock.isZero() }
     } catch (e) {
-      if (typeof e.statusCode !== 'undefined') {
+      if (typeof e.statusCode !== 'undefined' || e.code === 'NETWORK_ERROR') {
         return Promise.reject(new Error('CONNECTION ERROR'))
       }
       return Promise.reject(e)
