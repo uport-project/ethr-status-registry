@@ -38,7 +38,7 @@
     "@types/ethjs-signer": "0.1.0",
     "@types/jest": "26.0.24",
     "@types/node": "14.17.5",
-    "codecov": "3.8.2",
+    "codecov": "3.8.3",
     "ethjs-signer": "0.1.1",
     "ganache-cli": "6.12.2",
     "jest": "27.0.6",
