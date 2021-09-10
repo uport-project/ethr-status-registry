@@ -43,7 +43,7 @@
     "ganache-cli": "6.12.2",
     "jest": "27.1.1",
     "jest-extended": "0.11.5",
-    "prettier": "2.3.2",
+    "prettier": "2.4.0",
     "semantic-release": "17.4.7",
     "ts-jest": "27.0.5",
     "tslint": "6.1.3",
