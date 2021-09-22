@@ -33,7 +33,7 @@
   "devDependencies": {
     "@ethersproject/bytes": "5.4.0",
     "@ethersproject/units": "5.4.0",
-    "@semantic-release/changelog": "5.0.1",
+    "@semantic-release/changelog": "6.0.0",
     "@semantic-release/git": "10.0.0",
     "@types/ethjs-signer": "0.1.0",
     "@types/jest": "27.0.2",
