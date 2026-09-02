@@ -63,7 +63,7 @@
     "@ethersproject/providers": "^5.0.19",
     "@ethersproject/strings": "^5.0.8",
     "@ethersproject/transactions": "^5.0.9",
-    "credential-status": "^1.2.2",
+    "credential-status": "^3.0.0",
     "did-jwt": "^4.8.1",
     "did-resolver": "^2.1.2",
     "revocation-registry": "^0.1.0"
